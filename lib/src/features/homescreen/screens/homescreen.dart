@@ -1,7 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:tsk_3/src/common/utils/context_extension.dart';
+import 'package:tsk_3/src/common/widgets/todo_list.dart';
 
-class Homescreen extends StatelessWidget {
+import '../controller/todo_controller.dart';
+
+class Homescreen extends StatefulWidget {
   const Homescreen({super.key});
+
+  @override
+  State<Homescreen> createState() => _HomescreenState();
+}
+
+class _HomescreenState extends State<Homescreen> {
+  late final ITodoController _todoController;
+  TextEditingController _controller = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _todoController = TodoController(context.dependencies.todoRepository);
+    _controller = TextEditingController();
+  }
+
+  @override
+  void dispose() {
+    _todoController.dispose();
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -13,16 +39,104 @@ class Homescreen extends StatelessWidget {
         centerTitle: true,
       ),
 
-      body: ListView.builder(
-        itemBuilder: (BuildContext context, int index) => ListTile(
-          title: Text("data"),
-          leading: Checkbox(value: true, onChanged: (_) {}),
-        ),
-        itemCount: 20,
+      body: ListenableBuilder(
+        listenable: _todoController,
+        builder: (context, child) {
+          return ListView.builder(
+            shrinkWrap: true,
+            itemBuilder: (BuildContext context, int index) => TodoList(
+              onChanged: (_) {
+                _todoController.editNote(
+                  index,
+                  _todoController.notes[index].text,
+                  !_todoController.notes[index].isChecked,
+                );
+              },
+              title: _todoController.notes[index].text,
+              onTap: () {
+                showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: Text("Delete Note"),
+                    content: TextField(
+                      controller: _controller,
+                      autofocus: true,
+                      decoration: InputDecoration(hintText: "Edit"),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          _controller.clear();
+                        },
+                        child: Text("Cancel"),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          _todoController.editNote(
+                            index,
+                            _controller.text,
+                            _todoController.notes[index].isChecked,
+                          );
+                          Navigator.pop(context);
+                          _controller.clear();
+                        },
+                        child: Text("edit"),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          _todoController.deleteNote(index);
+                          Navigator.pop(context);
+                          _controller.clear();
+                        },
+                        child: Text("Delete"),
+                      ),
+                    ],
+                  ),
+                );
+              },
+              value: _todoController.notes[index].isChecked,
+            ),
+            itemCount: _todoController.notes.length,
+          );
+        },
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        child: Icon(Icons.add),
+      floatingActionButton: ListenableBuilder(
+        listenable: _todoController,
+        builder: (context, child) => FloatingActionButton(
+          onPressed: () {
+            showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: Text("Add Note"),
+                content: TextField(
+                  controller: _controller,
+                  autofocus: true,
+                  decoration: InputDecoration(hintText: "Add new notes"),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _controller.clear();
+                    },
+                    child: Text("Cancel"),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      _todoController.addNote(_controller.text, false);
+
+                      Navigator.pop(context);
+                      _controller.clear();
+                    },
+                    child: Text("Add"),
+                  ),
+                ],
+              ),
+            );
+          },
+          child: Icon(Icons.add),
+        ),
       ),
     );
   }

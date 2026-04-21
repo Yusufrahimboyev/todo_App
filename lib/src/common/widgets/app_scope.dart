@@ -9,10 +9,10 @@ class AppScope extends StatefulWidget {
   const AppScope({super.key, required this.child, required this.dependency});
 
   @override
-  State<AppScope> createState() => _AppScopeState();
+  State<AppScope> createState() => AppScopeState();
 }
 
-class _AppScopeState extends State<AppScope> {
+class AppScopeState extends State<AppScope> {
   late final AppDependency dependency;
   @override
   initState() {
