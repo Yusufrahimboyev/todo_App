@@ -18,9 +18,12 @@ class LocalController extends TodoRepository {
         .map((e) => Note.fromJson(jsonDecode(e)))
         .toList();
 
-    notes.add(Note(text: note, isChecked: value));
+    notes.add(Note(text: note, isChecked: value, id: notes.length.toString()));
 
-    await _shp.setStringList(_notes, notes.map((e) => e.toJson()).toList());
+    await _shp.setStringList(
+      _notes,
+      notes.map((e) => jsonEncode(e.toMap())).toList(),
+    );
   }
 
   @override
@@ -33,23 +36,31 @@ class LocalController extends TodoRepository {
     modelList.removeAt(index);
     final jsonList = <String>[];
     for (final i in modelList) {
-      jsonList.add(i.toJson());
+      jsonList.add(jsonEncode(i.toMap()));
     }
     await _shp.setStringList(_notes, jsonList);
   }
 
   @override
-  Future<void> editNote(int index, String newTxt, bool value) async {
-    final notes = _shp.getStringList(_notes) ?? [];
+  Future<void> editNote(
+    int index,
+    String newTxt,
+    bool value,
+    List<Note> notes,
+  ) async {
     final modelList = <Note>[];
     for (final i in notes) {
-      modelList.add(Note.fromJson(jsonDecode(i)));
+      modelList.add(i);
     }
-    modelList[index] = Note(text: newTxt, isChecked: value);
+    modelList[index] = Note(
+      text: newTxt,
+      isChecked: value,
+      id: modelList[index].id,
+    );
 
     final jsonList = <String>[];
     for (final i in modelList) {
-      jsonList.add(i.toJson());
+      jsonList.add(jsonEncode(i.toMap()));
     }
     await _shp.setStringList(_notes, jsonList);
   }
@@ -62,5 +73,10 @@ class LocalController extends TodoRepository {
       modelList.add(Note.fromJson(jsonDecode(i)));
     }
     return modelList;
+  }
+
+  @override
+  Future<void> deleteAll() async {
+    await _shp.remove(_notes);
   }
 }

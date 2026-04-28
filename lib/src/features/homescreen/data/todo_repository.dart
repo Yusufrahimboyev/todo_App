@@ -7,7 +7,9 @@ abstract class TodoRepository {
 
   Future<void> deleteNote(int index);
 
-  Future<void> editNote(int index, String newTxt, bool values);
+  Future<void> editNote(int index, String newTxt, bool values, List<Note> note);
 
   List<Note> getNotes();
+
+  Future<void> deleteAll();
 }

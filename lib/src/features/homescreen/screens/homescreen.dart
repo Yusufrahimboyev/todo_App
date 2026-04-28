@@ -18,7 +18,12 @@ class _HomescreenState extends State<Homescreen> {
   @override
   void initState() {
     super.initState();
-    _todoController = TodoController(context.dependencies.todoRepository);
+
+    _todoController = TodoController(
+      context.dependencies.todoRepository,
+      context.dependencies.firebaseController,
+    );
+    _todoController.getData();
     _controller = TextEditingController();
   }
 
@@ -37,8 +42,50 @@ class _HomescreenState extends State<Homescreen> {
         scrolledUnderElevation: 0,
         elevation: 0,
         centerTitle: true,
+        actions: [
+          IconButton(
+            onPressed: _todoController.deleteAll,
+            icon: Icon(Icons.delete_forever),
+          ),
+        ],
       ),
+      floatingActionButton: ListenableBuilder(
+        listenable: _todoController,
+        builder: (context, child) => FloatingActionButton(
+          onPressed: () {
+            showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: Text("Add Note"),
+                content: TextField(
+                  controller: _controller,
+                  autofocus: true,
+                  decoration: InputDecoration(hintText: "Add new notes"),
+                ),
+                actions: [
+                  TextButton(
+                    onPressed: () {
+                      Navigator.pop(context);
+                      _controller.clear();
+                    },
+                    child: Text("Cancel"),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      _todoController.addNote(_controller.text, false);
 
+                      Navigator.pop(context);
+                      _controller.clear();
+                    },
+                    child: Text("Add"),
+                  ),
+                ],
+              ),
+            );
+          },
+          child: Icon(Icons.add),
+        ),
+      ),
       body: ListenableBuilder(
         listenable: _todoController,
         builder: (context, child) {
@@ -100,43 +147,6 @@ class _HomescreenState extends State<Homescreen> {
             itemCount: _todoController.notes.length,
           );
         },
-      ),
-      floatingActionButton: ListenableBuilder(
-        listenable: _todoController,
-        builder: (context, child) => FloatingActionButton(
-          onPressed: () {
-            showDialog(
-              context: context,
-              builder: (context) => AlertDialog(
-                title: Text("Add Note"),
-                content: TextField(
-                  controller: _controller,
-                  autofocus: true,
-                  decoration: InputDecoration(hintText: "Add new notes"),
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      _controller.clear();
-                    },
-                    child: Text("Cancel"),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      _todoController.addNote(_controller.text, false);
-
-                      Navigator.pop(context);
-                      _controller.clear();
-                    },
-                    child: Text("Add"),
-                  ),
-                ],
-              ),
-            );
-          },
-          child: Icon(Icons.add),
-        ),
       ),
     );
   }
