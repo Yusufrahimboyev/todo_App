@@ -13,12 +13,19 @@ class LocalController extends TodoRepository {
   static const String _notes = "notes";
 
   @override
-  Future<void> addNote(String note, bool value) async {
+  Future<void> addNote(String note, bool value, DateTime createdAt) async {
     final notes = (_shp.getStringList(_notes) ?? [])
         .map((e) => Note.fromJson(jsonDecode(e)))
         .toList();
 
-    notes.add(Note(text: note, isChecked: value, id: notes.length.toString()));
+    notes.add(
+      Note(
+        text: note,
+        isChecked: value,
+        id: notes.length.toString(),
+        createdAt: createdAt.toString(),
+      ),
+    );
 
     await _shp.setStringList(
       _notes,
@@ -43,20 +50,25 @@ class LocalController extends TodoRepository {
 
   @override
   Future<void> editNote(
-    int index,
+    String index,
     String newTxt,
     bool value,
     List<Note> notes,
+    DateTime createdAt,
   ) async {
     final modelList = <Note>[];
     for (final i in notes) {
       modelList.add(i);
     }
-    modelList[index] = Note(
-      text: newTxt,
-      isChecked: value,
-      id: modelList[index].id,
-    );
+    final targetIndex = int.tryParse(index) ?? 0;
+    if (targetIndex >= 0 && targetIndex < modelList.length) {
+      modelList[targetIndex] = Note(
+        text: newTxt,
+        isChecked: value,
+        id: notes[targetIndex].id,
+        createdAt: createdAt.toString(),
+      );
+    }
 
     final jsonList = <String>[];
     for (final i in modelList) {
@@ -78,5 +90,10 @@ class LocalController extends TodoRepository {
   @override
   Future<void> deleteAll() async {
     await _shp.remove(_notes);
+  }
+
+  @override
+  Stream<List<Note>> get notes {
+    return Stream.value(getNotes());
   }
 }

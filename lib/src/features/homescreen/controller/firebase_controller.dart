@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+
 import 'package:tsk_3/src/features/homescreen/model/note.dart';
 
 abstract class FirebaseController {
@@ -38,7 +39,7 @@ class IFirebaseController extends FirebaseController {
     for (var i in querySnapshot.docs) {
       modelList.add(Note.fromJson(i.data() as Map<String, Object?>));
     }
-    print(modelList);
+
     return modelList;
   }
 
