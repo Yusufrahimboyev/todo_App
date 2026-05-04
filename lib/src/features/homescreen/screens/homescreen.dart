@@ -99,7 +99,7 @@ class _HomescreenState extends State<Homescreen> {
               itemBuilder: (BuildContext context, int index) => TodoList(
                 onChanged: (_) {
                   _todoController.editNote(
-                    index,
+                    noteList[index].id,
                     noteList[index].text,
                     !noteList[index].isChecked,
                     DateTime.now(),
@@ -127,7 +127,7 @@ class _HomescreenState extends State<Homescreen> {
                         TextButton(
                           onPressed: () {
                             _todoController.editNote(
-                              index,
+                              noteList[index].id,
                               _controller.text,
                               noteList[index].isChecked,
                               DateTime.now(),

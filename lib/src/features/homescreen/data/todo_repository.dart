@@ -5,13 +5,12 @@ abstract class TodoRepository {
 
   Future<void> addNote(String note, bool value, DateTime createdAt);
 
-  Future<void> deleteNote(int index);
+  Future<void> deleteNote(Note note);
 
   Future<void> editNote(
-    String index,
+    String id,
     String newTxt,
-    bool values,
-    List<Note> note,
+    bool value,
     DateTime createdAt,
   );
 

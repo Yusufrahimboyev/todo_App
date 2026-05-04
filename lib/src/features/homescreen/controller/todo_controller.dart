@@ -16,7 +16,7 @@ abstract class ITodoController extends ChangeNotifier {
   Future<void> deleteAll();
 
   Future<void> editNote(
-    int index,
+    String id,
     String newTxt,
     bool value,
     DateTime createdAt,
@@ -62,31 +62,33 @@ class TodoController extends ITodoController {
   Future<void> deleteNote(int index) async {
     if (notes.isEmpty) return;
     await _firebaseController.delete(notes[index]);
-    await _todoRepository.deleteNote(index);
+    await _todoRepository.deleteNote(notes[index]);
     await getData();
     notifyListeners();
   }
 
   @override
   Future<void> editNote(
-    int index,
+    String id,
     String newTxt,
     bool value,
     DateTime createdAt,
   ) async {
     if (newTxt.isEmpty) return;
-    await _todoRepository.editNote(
-      notes[index].id,
-      newTxt,
-      value,
-      notes,
-      createdAt,
-    );
+    await _todoRepository.editNote(id, newTxt, value, createdAt);
     await _firebaseController.update(
       Note(
         text: newTxt,
         isChecked: value,
-        id: notes[index].id,
+        id: id,
+        createdAt: createdAt.toString(),
+      ),
+    );
+    await _firebaseRealtimeController.update(
+      Note(
+        text: newTxt,
+        isChecked: value,
+        id: id,
         createdAt: createdAt.toString(),
       ),
     );
